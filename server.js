@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://6830616d4ef698f7687b9260--student-management-system-auth.netlify.app/",
+      "https://6830633d9783c36e9d2a6b23--student-management-system-auth.netlify.app",
     ],
   })
 );

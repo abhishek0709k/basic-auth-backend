@@ -4,10 +4,19 @@ import cors from "cors";
 import User from "./signUpSchema.js";
 import mongoose from "mongoose";
 import bcrypt from "bcrypt";
+import jwt from "jsonwebtoken";
+import authMiddleware from "./authMiddleware.js";
 
 const app = express();
 const port = process.env.PORT || 5000;
-app.use(cors({ origin: ["http://localhost:5173", "https://6830569c990ce8dd973fdc15--student-management-system-auth.netlify.app"] }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "https://6830569c990ce8dd973fdc15--student-management-system-auth.netlify.app",
+    ],
+  })
+);
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI).then(() => {
@@ -35,38 +44,58 @@ app.post("/api/signup", async (req, res) => {
 });
 
 app.post("/api/signin", async (req, res) => {
-     try {
-      const { email, password } = req.body;
+  try {
+    const { email, password } = req.body;
+    const existedUser = await User.findOne({ email });
 
+    if (!existedUser) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid email or password" });
+    }
 
-      const existedUser = await User.findOne({ email });
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      existedUser.password
+    );
 
-      if (!existedUser) {
-        return res
-          .status(401)
-          .json({ success: false, message: "Invalid email or password" });
-      }
+    if (!isPasswordValid) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid email or password" });
+    }
 
-      const isPasswordValid = await bcrypt.compare(
-        password,
-        existedUser.password
-      );
+    const token = await jwt.sign(
+      { _id: existedUser._id, email: existedUser.email },
+      process.env.JWT_SECRET
+    );
+    res
+      .status(200)
+      .json({ success: true, message: "Signed in successfully", token: token });
+  } catch (error) {
+    console.error("SignIn Error:", error);
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
+});
 
-      if (!isPasswordValid) {
-        return res
-          .status(401)
-          .json({ success: false, message: "Invalid email or password" });
-      }
-
-      res
-        .status(200)
-        .json({ success: true, message: "Signed in successfully" });
-    } catch (error) {
-      console.error("SignIn Error:", error);
+app.get("/api/profile", authMiddleware, async (req, res) => {
+  try {
+    const existedUser = await User.findById(req.user._id);
+    if (!existedUser) {
       res
         .status(500)
         .json({ success: false, message: "Internal server error" });
     }
+    res
+      .status(200)
+      .json({
+        success: true,
+        fullname: existedUser.fullname,
+        email: existedUser.email,
+      });
+  } catch (error) {
+    res.status(500).json({ success: false, message: "Internal server error" });
+  }
 });
 
 app.listen(port, () => {

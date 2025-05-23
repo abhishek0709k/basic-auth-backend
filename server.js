@@ -7,7 +7,7 @@ import bcrypt from "bcrypt";
 
 const app = express();
 const port = process.env.PORT || 5000;
-app.use(cors({ origin: ["http://localhost:5173"] }));
+app.use(cors({ origin: ["http://localhost:5173", "https://6830569c990ce8dd973fdc15--student-management-system-auth.netlify.app"] }));
 app.use(express.json());
 
 mongoose.connect(process.env.MONGO_URI).then(() => {
@@ -51,7 +51,7 @@ app.post("/api/signin", async (req, res) => {
         password,
         existedUser.password
       );
-      
+
       if (!isPasswordValid) {
         return res
           .status(401)

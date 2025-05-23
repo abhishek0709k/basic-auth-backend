@@ -13,7 +13,7 @@ app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://6830633d9783c36e9d2a6b23--student-management-system-auth.netlify.app",
+      "https://6830718bf67097161518cd60--student-management-system-auth.netlify.app",
     ],
   })
 );
@@ -65,7 +65,7 @@ app.post("/api/signin", async (req, res) => {
         .json({ success: false, message: "Invalid email or password" });
     }
 
-    const token = await jwt.sign(
+    const token = jwt.sign(
       { _id: existedUser._id, email: existedUser.email },
       process.env.JWT_SECRET
     );

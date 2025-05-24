@@ -12,8 +12,8 @@ const port = process.env.PORT || 5000;
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",
       "https://6830718bf67097161518cd60--student-management-system-auth.netlify.app",
+      "http://localhost:5173"
     ],
   })
 );
